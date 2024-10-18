@@ -23,10 +23,9 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
-
    supply1 VPWR;
    supply0 VGND;
-   
+
   // Replace tt_um_example with your module name:
   tt_um_Richard28277 user_project (
 
