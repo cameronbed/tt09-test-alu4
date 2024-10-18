@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1728674679" />
+    <testcase name="test_project" classname="test" file="/home/runner/work/tt09-test-fork/tt09-test-fork/test/test.py" lineno="9" time="0.0016906261444091797" sim_time_ns="90000.001" ratio_time="53234715.018234946" />
+  </testsuite>
+</testsuites>
