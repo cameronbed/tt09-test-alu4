@@ -113,23 +113,23 @@ module tt_um_Richard28277 (
 
     // Assign outputs
     assign uo_out  = result;
-    assign uio_out[7] = overflow; 
-    assign uio_out[6] = carry_out;  
-    assign uio_out[5] = 1'b0; 
-    assign uio_out[4] = 1'b0; 
-    assign uio_out[3] = 1'b0;   
-    assign uio_out[2] = 1'b0;     
-    assign uio_out[1] = 1'b0;     
-    assign uio_out[0] = 1'b0;    
+    assign uio_out[7] = overflow;
+    assign uio_out[6] = carry_out;
+    assign uio_out[5] = 1'b0;
+    assign uio_out[4] = 1'b0;
+    assign uio_out[3] = 1'b0;
+    assign uio_out[2] = 1'b0;
+    assign uio_out[1] = 1'b0;
+    assign uio_out[0] = 1'b0;
 
     // IO Enable Path
-    assign uio_oe[7] = 1'b1; 
+    assign uio_oe[7] = 1'b1;
     assign uio_oe[6] = 1'b1;
-    assign uio_oe[5] = 1'b0; 
-    assign uio_oe[4] = 1'b0; 
-    assign uio_oe[3] = 1'b0; 
-    assign uio_oe[2] = 1'b0; 
-    assign uio_oe[1] = 1'b0; 
+    assign uio_oe[5] = 1'b0;
+    assign uio_oe[4] = 1'b0;
+    assign uio_oe[3] = 1'b0;
+    assign uio_oe[2] = 1'b0;
+    assign uio_oe[1] = 1'b0;
     assign uio_oe[0] = 1'b0;
 
     wire _unused = &{ena, clk, rst_n, 1'b0};

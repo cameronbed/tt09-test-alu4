@@ -52,7 +52,7 @@ async def test_tt_um_Richard28277(dut):
 
                 expected_result = alu_operation(a, b, opcode)
 
-                display_result(opcode, a, b, dut.uo_out.value)
+                display_result(opcode)
 
                 assert dut.uo_out.value == expected_result, \
                     f"Opcode {opcode}: a={a}, b={b}, expected {expected_result}, got {dut.uo_out.value}"
