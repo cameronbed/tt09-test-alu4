@@ -62,22 +62,24 @@ module tt_um_Richard28277 (
     assign div_remainder = (b != 0) ? a % b : 4'b0000;
 
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            result <= 8'b00000000;
+    if (!rst_n) begin
+        result <= 8'b00000000;
+        carry_out <= 0;
+        overflow <= 0;
+        end else begin
+            // Clear carry_out and overflow for each operation
             carry_out <= 0;
             overflow <= 0;
-        end else begin
+
             case (opcode)
                 ADD: begin
                     result <= {4'b0000, add_result[3:0]}; // 4-bit result with upper 4 bits set to 0
                     carry_out <= add_result[4]; // Carry out
-                    // Overflow detection
                     overflow <= (a[3] & b[3] & ~add_result[3]) | (~a[3] & ~b[3] & add_result[3]);
                 end
                 SUB: begin
                     result <= {4'b0000, sub_result[3:0]}; // 4-bit result with upper 4 bits set to 0
                     carry_out <= ~sub_result[4]; 
-                    // Overflow detection
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
@@ -99,17 +101,15 @@ module tt_um_Richard28277 (
                     result <= {4'b0000, not_result}; // 4-bit result with upper 4 bits set to 0
                 end
                 ENC: begin
-                    // Apply encryption to the concatenated input (a and b)
                     result <= (a << 4 | b) ^ ENCRYPTION_KEY;
                 end
                 default: begin
                     result <= 8'b00000000;
-                    carry_out <= 0;
-                    overflow <= 0;
                 end
             endcase
         end
     end
+
 
     // Assign outputs
     assign uo_out  = result;
