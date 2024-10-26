@@ -1,5 +1,5 @@
 import cocotb
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import RisingEdge, Timer, ClockCycles
 from cocotb.clock import Clock
 
 @cocotb.test()
@@ -13,9 +13,10 @@ async def test_tt_um_Richard28277(dut):
     dut.ena.value = 1
     dut.rst_n.value = 0
 
-    # Wait for global reset
+    # Wait for global reset and stabilization
     await Timer(50, units='ns')
     dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)  # Allow time for the reset to settle
 
     # Opcode names for display
     opcode_names = {
@@ -33,15 +34,20 @@ async def test_tt_um_Richard28277(dut):
     # Helper function to display results
     def display_result(opcode):
         op_name = opcode_names.get(opcode, "UNKNOWN")
-        print(f"{op_name}: result = {dut.uo_out.value}, uio_out = {dut.uio_out.value}")
+        print(f"{op_name}: result = {int(dut.uo_out.value)}, uio_out = {int(dut.uio_out.value)}")
 
     def alu_operation(a, b, opcode):
         if opcode == 0:  # ADD
-            return (a + b) & 0x1F  # 5-bit sum to include carry-out
+            sum_result = (a + b) & 0x1F  # 5-bit result
+            carry_out = (a + b) >> 4     # Carry-out (5th bit)
+            return sum_result, carry_out
         elif opcode == 1:  # SUB
-            return (a - b) & 0x1F  # 5-bit difference to include borrow
+            result = a - b
+            if result < 0:
+                result = (result + 32) & 0x1F  # Adjust for 5-bit signed result
+            return result, (result >> 4) & 1  # Return 5-bit result and borrow
         elif opcode == 2:  # MUL
-            return (a * b) & 0xFF  # 8-bit product
+            return (a * b) & 0xFF, 0
         elif opcode == 3:  # DIV
             if b != 0:
                 quotient = a // b
@@ -49,125 +55,39 @@ async def test_tt_um_Richard28277(dut):
             else:
                 quotient = 0
                 remainder = 0
-            return (quotient << 4) | remainder  # Quotient in upper 4 bits, remainder in lower 4 bits
+            return (quotient << 4) | remainder, 0
         elif opcode == 4:  # AND
-            return a & b
+            return a & b, 0
         elif opcode == 5:  # OR
-            return a | b
+            return a | b, 0
         elif opcode == 6:  # XOR
-            return a ^ b
+            return a ^ b, 0
         elif opcode == 7:  # NOT
-            return (~a) & 0xF  # Invert `a`, 4-bit mask
+            return (~a) & 0xF, 0
         elif opcode == 8:  # ENC
             combined_input = (a << 4) | b
-            return (combined_input ^ 0xAB) & 0xFF  # Encryption example
-        return 0
+            return (combined_input ^ 0xAB) & 0xFF, 0
+        return 0, 0
 
     for a in range(16):
         for b in range(16):
             for opcode in range(9):
-                dut.ui_in.value = (a << 4) | b  # Corrected input assignment
+                dut.ui_in.value = (a << 4) | b
                 dut.uio_in.value = opcode
 
-                await RisingEdge(dut.clk)  # Wait for clock edge to synchronize
-                await Timer(1, units='ns')  # Small delay to allow signals to propagate
+                await ClockCycles(dut.clk, 2)  # Wait for 2 cycles for signals to propagate
 
-                expected_result = alu_operation(a, b, opcode)
+                expected_result, expected_carry_out = alu_operation(a, b, opcode)
 
                 display_result(opcode)
 
+                # Check the output
                 assert dut.uo_out.value == expected_result, \
                     f"Opcode {opcode_names[opcode]}: a={a}, b={b}, expected {expected_result}, got {int(dut.uo_out.value)}"
 
+                # Check the carry-out if applicable
+                if opcode in [0, 1]:  # ADD or SUB
+                    assert dut.uio_out.value[6] == expected_carry_out, \
+                        f"Opcode {opcode_names[opcode]}: a={a}, b={b}, expected carry_out {expected_carry_out}, got {dut.uio_out.value[6]}"
+
     dut._log.info("All test cases passed.")
-
-    # Individual Test Cases
-
-    # Test ADD operation
-    a = 3
-    b = 5
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0000  # opcode = ADD
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 0)
-    display_result(0)
-    assert dut.uo_out.value == expected_result, f"ADD failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test SUB operation
-    a = 2
-    b = 1
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0001  # opcode = SUB
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 1)
-    display_result(1)
-    assert dut.uo_out.value == expected_result, f"SUB failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test MUL operation
-    a = 2
-    b = 3
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0010  # opcode = MUL
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 2)
-    display_result(2)
-    assert dut.uo_out.value == expected_result, f"MUL failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test DIV operation
-    a = 4
-    b = 2
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0011  # opcode = DIV
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 3)
-    display_result(3)
-    assert dut.uo_out.value == expected_result, f"DIV failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test AND operation
-    a = 2
-    b = 2
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0100  # opcode = AND
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 4)
-    display_result(4)
-    assert dut.uo_out.value == expected_result, f"AND failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test OR operation
-    a = 12
-    b = 10
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0101  # opcode = OR
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 5)
-    display_result(5)
-    assert dut.uo_out.value == expected_result, f"OR failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test XOR operation
-    a = 12
-    b = 10
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b0110  # opcode = XOR
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 6)
-    display_result(6)
-    assert dut.uo_out.value == expected_result, f"XOR failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test NOT operation
-    a = 12
-    dut.ui_in.value = (a << 4)  # b is ignored
-    dut.uio_in.value = 0b0111  # opcode = NOT
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, 0, 7)
-    display_result(7)
-    assert dut.uo_out.value == expected_result, f"NOT failed: expected {expected_result}, got {int(dut.uo_out.value)}"
-
-    # Test ENC operation
-    a = 2
-    b = 12
-    dut.ui_in.value = (a << 4) | b
-    dut.uio_in.value = 0b1000  # opcode = ENC
-    await RisingEdge(dut.clk)
-    expected_result = alu_operation(a, b, 8)
-    display_result(8)
-    assert dut.uo_out.value == expected_result, f"ENC failed: expected {expected_result}, got {int(dut.uo_out.value)}"
