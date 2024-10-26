@@ -27,8 +27,8 @@ module tt_um_Richard28277 (
     parameter ENC = 4'b1000; // Encryption operation
 
     // Internal signals
-    wire [3:0] a = ui_in[7:4];   // Input a 
-    wire [3:0] b = ui_in[3:0];   // Input b 
+    wire [3:0] a = ui_in[7:4]; // Input a
+    wire [3:0] b = ui_in[3:0]; // Input b
     wire [3:0] opcode = uio_in[3:0]; // Opcode
 
     // Encryption parameters
@@ -84,7 +84,7 @@ module tt_um_Richard28277 (
                     result <= mul_result; // 8-bit result
                 end
                 DIV: begin
-                    result <= {div_remainder, div_quotient}; // 8-bit result (remainder: lower 4 bits, quotient: upper 4 bits)
+                    result <= {div_quotient, div_remainder}; // Quotient in upper 4 bits, remainder in lower 4 bits
                 end
                 AND: begin
                     result <= {4'b0000, and_result}; // 4-bit result with upper 4 bits set to 0
