@@ -48,10 +48,10 @@ module tt_um_Richard28277 (
     reg overflow;
 
     // Addition
-    assign add_result = a + b;
+    assign add_result = {1'b0, a} + {1'b0, b};
 
     // Subtraction (5-bit unsigned)
-    assign sub_result = a - b;
+    assign sub_result = {1'b0, a} - {1'b0, b};
 
     // Multiplication
     assign mul_result = a * b;
@@ -74,7 +74,7 @@ module tt_um_Richard28277 (
                 end
                 SUB: begin
                     result <= {4'b0000, sub_result[3:0]}; // 4-bit result
-                    carry_out <= (a < b); // Borrow if a < b
+                    carry_out <= sub_result[4]; // Borrow is the MSB
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
