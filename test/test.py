@@ -38,17 +38,18 @@ async def test_tt_um_Richard28277(dut):
 
     def alu_operation(a, b, opcode):
         if opcode == 0:  # ADD
-            sum_result = (a + b) & 0xF  # 4-bit result
-            carry_out = ((a + b) >> 4) & 1     # Carry-out (5th bit)
-            overflow = ((a & 0x8) == (b & 0x8)) and ((sum_result & 0x8) != (a & 0x8))
-            return sum_result, carry_out, overflow
+            sum_result = a + b
+            full_result = sum_result & 0x1F  # 5-bit result to capture carry out
+            result = sum_result & 0xF        # 4-bit result
+            carry_out = (sum_result >> 4) & 1
+            overflow = ((a & 0x8) == (b & 0x8)) and ((result & 0x8) != (a & 0x8))
+            return result, carry_out, overflow
         elif opcode == 1:  # SUB
-            result = a - b
-            carry_out = int(a < b)
-            if result < 0:
-                result = (result + 16)  # Adjust for 4-bit result
+            sub_result = (a - b) & 0x1F  # 5-bit result to capture borrow
+            result = sub_result & 0xF    # 4-bit result
+            carry_out = (sub_result >> 4) & 1  # Borrow is MSB
             overflow = ((a & 0x8) != (b & 0x8)) and ((result & 0x8) != (a & 0x8))
-            return result & 0xF, carry_out, overflow
+            return result, carry_out, overflow
         elif opcode == 2:  # MUL
             return (a * b) & 0xFF, 0, 0
         elif opcode == 3:  # DIV
