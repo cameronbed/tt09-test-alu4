@@ -79,7 +79,7 @@ module tt_um_Richard28277 (
                 end
                 SUB: begin
                     result <= {4'b0000, sub_result[3:0]}; // 4-bit result
-                    carry_out <= sub_result[4]; // Borrow bit
+                    carry_out <= (sub_result[4] != sub_result[3]); // Borrow if 5th bit differs from 4th bit
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
