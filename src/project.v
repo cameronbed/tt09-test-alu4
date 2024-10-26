@@ -36,7 +36,7 @@ module tt_um_Richard28277 (
 
     // Internal signals for operations
     wire [4:0] add_result;          // 5 bits to capture carry/overflow
-    wire [4:0] sub_result;          // 5 bits to capture borrow
+    wire signed [4:0] sub_result;          // 5 bits to capture borrow
     wire [7:0] mul_result;          // 8 bits for multiplication
     wire [3:0] div_quotient;
     wire [3:0] div_remainder;
@@ -51,8 +51,8 @@ module tt_um_Richard28277 (
     // Addition
     assign add_result = a + b;
 
-    // Subtraction
-    assign sub_result = a - b;
+    // Subtraction (5-bit signed)
+    assign sub_result = {a[3], a} - {b[3], b};
 
     // Multiplication
     assign mul_result = a * b;
@@ -62,10 +62,10 @@ module tt_um_Richard28277 (
     assign div_remainder = (b != 0) ? a % b : 4'b0000;
 
     always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        result <= 8'b00000000;
-        carry_out <= 0;
-        overflow <= 0;
+        if (!rst_n) begin
+            result <= 8'b00000000;
+            carry_out <= 0;
+            overflow <= 0;
         end else begin
             // Clear carry_out and overflow for each operation
             carry_out <= 0;
@@ -73,35 +73,35 @@ module tt_um_Richard28277 (
 
             case (opcode)
                 ADD: begin
-                    result <= {4'b0000, add_result[3:0]}; // 4-bit result with upper 4 bits set to 0
+                    result <= {4'b0000, add_result[3:0]}; // 4-bit result
                     carry_out <= add_result[4]; // Carry out
                     overflow <= (a[3] & b[3] & ~add_result[3]) | (~a[3] & ~b[3] & add_result[3]);
                 end
                 SUB: begin
-                    result <= {4'b0000, sub_result[3:0]}; // 4-bit result with upper 4 bits set to 0
-                    carry_out <= ~sub_result[4]; 
+                    result <= {4'b0000, sub_result[3:0]}; // 4-bit result
+                    carry_out <= sub_result[4]; // Borrow bit
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
                     result <= mul_result; // 8-bit result
                 end
                 DIV: begin
-                    result <= {div_quotient, div_remainder}; // Quotient in upper 4 bits, remainder in lower 4 bits
+                    result <= {div_quotient, div_remainder}; // Quotient and remainder
                 end
                 AND: begin
-                    result <= {4'b0000, and_result}; // 4-bit result with upper 4 bits set to 0
+                    result <= {4'b0000, and_result}; // 4-bit result
                 end
                 OR: begin
-                    result <= {4'b0000, or_result}; // 4-bit result with upper 4 bits set to 0
+                    result <= {4'b0000, or_result}; // 4-bit result
                 end
                 XOR: begin
-                    result <= {4'b0000, xor_result}; // 4-bit result with upper 4 bits set to 0
+                    result <= {4'b0000, xor_result}; // 4-bit result
                 end
                 NOT: begin
-                    result <= {4'b0000, not_result}; // 4-bit result with upper 4 bits set to 0
+                    result <= {4'b0000, not_result}; // 4-bit result
                 end
                 ENC: begin
-                    result <= (a << 4 | b) ^ ENCRYPTION_KEY;
+                    result <= (a << 4 | b) ^ ENCRYPTION_KEY; // Encryption
                 end
                 default: begin
                     result <= 8'b00000000;
