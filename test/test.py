@@ -46,6 +46,7 @@ async def test_tt_um_Richard28277(dut):
             if result < 0:
                 result = (result + 32) & 0x1F  # Adjust for 5-bit signed result
             return result, (result >> 4) & 1  # Return 5-bit result and borrow
+
         elif opcode == 2:  # MUL
             return (a * b) & 0xFF, 0
         elif opcode == 3:  # DIV
