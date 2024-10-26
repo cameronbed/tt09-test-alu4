@@ -66,10 +66,6 @@ module tt_um_Richard28277 (
             carry_out <= 0;
             overflow <= 0;
         end else begin
-            // Clear carry_out and overflow for each operation
-            carry_out <= 0;
-            overflow <= 0;
-
             case (opcode)
                 ADD: begin
                     result <= {4'b0000, add_result[3:0]}; // 4-bit result
@@ -83,27 +79,43 @@ module tt_um_Richard28277 (
                 end
                 MUL: begin
                     result <= mul_result; // 8-bit result
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 DIV: begin
                     result <= {div_quotient, div_remainder}; // Quotient and remainder
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 AND: begin
                     result <= {4'b0000, and_result}; // 4-bit result
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 OR: begin
                     result <= {4'b0000, or_result}; // 4-bit result
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 XOR: begin
                     result <= {4'b0000, xor_result}; // 4-bit result
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 NOT: begin
                     result <= {4'b0000, not_result}; // 4-bit result
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 ENC: begin
                     result <= (a << 4 | b) ^ ENCRYPTION_KEY; // Encryption
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
                 default: begin
                     result <= 8'b00000000;
+                    carry_out <= 0;
+                    overflow <= 0;
                 end
             endcase
         end
