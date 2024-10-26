@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2024 Your Name
- * SPDX-License-Identifier: Apache-2.0
+ * Corrected project.v
  */
 `default_nettype none
 
@@ -36,7 +35,7 @@ module tt_um_Richard28277 (
 
     // Internal signals for operations
     wire [4:0] add_result;          // 5 bits to capture carry/overflow
-    wire signed [4:0] sub_result;          // 5 bits to capture borrow
+    wire [4:0] sub_result;          // 5 bits to capture borrow
     wire [7:0] mul_result;          // 8 bits for multiplication
     wire [3:0] div_quotient;
     wire [3:0] div_remainder;
@@ -51,8 +50,8 @@ module tt_um_Richard28277 (
     // Addition
     assign add_result = a + b;
 
-    // Subtraction (5-bit signed)
-    assign sub_result = {a[3], a} - {b[3], b};
+    // Subtraction (5-bit unsigned)
+    assign sub_result = a - b;
 
     // Multiplication
     assign mul_result = a * b;
@@ -79,7 +78,7 @@ module tt_um_Richard28277 (
                 end
                 SUB: begin
                     result <= {4'b0000, sub_result[3:0]}; // 4-bit result
-                    carry_out <= (sub_result[4] != sub_result[3]); // Borrow if 5th bit differs from 4th bit
+                    carry_out <= (a < b); // Borrow if a < b
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
@@ -110,28 +109,16 @@ module tt_um_Richard28277 (
         end
     end
 
-
     // Assign outputs
     assign uo_out  = result;
     assign uio_out[7] = overflow;
     assign uio_out[6] = carry_out;
-    assign uio_out[5] = 1'b0;
-    assign uio_out[4] = 1'b0;
-    assign uio_out[3] = 1'b0;
-    assign uio_out[2] = 1'b0;
-    assign uio_out[1] = 1'b0;
-    assign uio_out[0] = 1'b0;
+    assign uio_out[5:0] = 6'b000000; // Unused bits
 
     // IO Enable Path
-    assign uio_oe[7] = 1'b1;
-    assign uio_oe[6] = 1'b1;
-    assign uio_oe[5] = 1'b0;
-    assign uio_oe[4] = 1'b0;
-    assign uio_oe[3] = 1'b0;
-    assign uio_oe[2] = 1'b0;
-    assign uio_oe[1] = 1'b0;
-    assign uio_oe[0] = 1'b0;
+    assign uio_oe[7:6] = 2'b11; // Output enable for overflow and carry_out
+    assign uio_oe[5:0] = 6'b000000; // Input mode for other bits
 
-    wire _unused = &{ena, clk, rst_n, 1'b0};
+    wire _unused = &{ena};
 
 endmodule
