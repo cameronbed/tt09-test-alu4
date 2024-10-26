@@ -1,5 +1,5 @@
 /*
- * Updated project.v
+ * Corrected project.v
  */
 `default_nettype none
 
@@ -35,7 +35,7 @@ module tt_um_Richard28277 (
 
     // Internal signals for operations
     wire [4:0] add_result;          // 5 bits to capture carry/overflow
-    wire [3:0] sub_result;          // 4-bit subtraction result
+    wire [4:0] sub_result;          // 5 bits to capture borrow
     wire [7:0] mul_result;          // 8 bits for multiplication
     wire [3:0] div_quotient;
     wire [3:0] div_remainder;
@@ -50,8 +50,15 @@ module tt_um_Richard28277 (
     // Addition
     assign add_result = {1'b0, a} + {1'b0, b};
 
-    // Subtraction (4-bit result)
-    assign sub_result = a - b;
+    // Subtraction (5-bit unsigned)
+    assign sub_result = {1'b0, a} - {1'b0, b};
+
+    // Multiplication
+    assign mul_result = a * b;
+
+    // Division
+    assign div_quotient = (b != 0) ? a / b : 4'b0000;
+    assign div_remainder = (b != 0) ? a % b : 4'b0000;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -66,8 +73,8 @@ module tt_um_Richard28277 (
                     overflow <= (a[3] & b[3] & ~add_result[3]) | (~a[3] & ~b[3] & add_result[3]);
                 end
                 SUB: begin
-                    result <= {4'b0000, sub_result}; // 4-bit result
-                    carry_out <= (a < b); // Borrow if a < b
+                    result <= {4'b0000, sub_result[3:0]}; // 4-bit result
+                    carry_out <= sub_result[4]; // Borrow is the MSB
                     overflow <= (a[3] & ~b[3] & ~sub_result[3]) | (~a[3] & b[3] & sub_result[3]);
                 end
                 MUL: begin
