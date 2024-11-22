@@ -3,7 +3,7 @@
  */
 `default_nettype none
 
-module tt_um_Richard28277 (
+module tt_um_Cameron_ALU (
     input  wire [7:0] ui_in,    // Dedicated inputs (a and b)
     output wire [7:0] uo_out,   // Dedicated outputs (result)
     input  wire [7:0] uio_in,   // IOs: Input path (opcode)
