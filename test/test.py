@@ -3,7 +3,7 @@ from cocotb.triggers import RisingEdge, Timer, ClockCycles
 from cocotb.clock import Clock
 
 @cocotb.test()
-async def test_tt_um_Richard28277(dut):
+async def test_tt_um_Cameron_ALU(dut):
     # Clock generation
     cocotb.start_soon(Clock(dut.clk, 10, units='ns').start())
 
