@@ -8,23 +8,10 @@ You can also include images in this folder and reference them in the markdown. E
 -->
 
 ## How it works
-
-Expansion.
-Expansion.
-Expansion.
-Expansion.
-
+The ALU is a compact 4-bit computational unit that precomputes common values and uses a case-based approach to efficiently handle arithmetic, logical, and cryptographic operations. Its design allows rapid processing of addition, subtraction, multiplication, division, bitwise logic, and a encryption feature, making it ideal for embedded systems requiring versatile computational and cryptographic capabilities with minimal resources.
 
 ## How to test
-
-Test explanation.
-Test explanation.
-Test explanation.
-Test explanation.
+This will require some sort of controller to control the input and read the output.
 
 ## External hardware
-
-List.
-List.
-List.
-List.
+External hardware is needed to transmit the 4-bit inputs and the 4-bit output.
